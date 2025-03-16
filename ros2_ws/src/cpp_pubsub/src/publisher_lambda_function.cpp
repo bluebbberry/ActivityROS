@@ -14,44 +14,45 @@
 
 #include <chrono>
 #include <memory>
-#include <string>
 
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
+#include "geometry_msgs/msg/twist.hpp"
 
 using namespace std::chrono_literals;
 
-/* This example creates a subclass of Node and uses a fancy C++11 lambda
- * function to shorten the callback syntax, at the expense of making the
- * code somewhat more difficult to understand at first glance. */
-
-class MinimalPublisher : public rclcpp::Node
+class TurtleMover : public rclcpp::Node
 {
 public:
-  MinimalPublisher()
-  : Node("minimal_publisher"), count_(0)
+  TurtleMover()
+  : Node("turtle_mover")
   {
-    publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
+    // Create a publisher for turtle velocity commands
+    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/turtle1/cmd_vel", 10);
+
+    // Lambda function to send movement commands every 3 seconds
     auto timer_callback =
       [this]() -> void {
-        auto message = std_msgs::msg::String();
-        message.data = "Hello, world! " + std::to_string(this->count_++);
-        RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
+        auto message = geometry_msgs::msg::Twist();
+        message.linear.x = 1.0;  // Move forward
+        message.angular.z = 0.0; // No rotation
+
+        RCLCPP_INFO(this->get_logger(), "Publishing movement command");
         this->publisher_->publish(message);
       };
-    timer_ = this->create_wall_timer(500ms, timer_callback);
+
+    // Timer that triggers the callback every 3 seconds
+    timer_ = this->create_wall_timer(3s, timer_callback);
   }
 
 private:
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
-  size_t count_;
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
 };
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<MinimalPublisher>());
+  rclcpp::spin(std::make_shared<TurtleMover>());
   rclcpp::shutdown();
   return 0;
 }

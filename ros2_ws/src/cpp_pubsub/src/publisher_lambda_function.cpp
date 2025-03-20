@@ -26,7 +26,7 @@ using namespace std::chrono_literals;
 
 // Mastodon API Credentials (Replace with your actual values)
 const std::string MASTODON_INSTANCE = "https://mastodon.social";  // Change to your instance
-const std::string ACCESS_TOKEN = "API_TOKEN";  // Replace with your API key
+const std::string ACCESS_TOKEN = "API-TOKEN";  // Replace with your API key
 
 // Function to handle HTTP GET request to Mastodon
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *output) {
@@ -39,7 +39,7 @@ std::string fetchMastodonPosts() {
     CURL *curl = curl_easy_init();
     if (!curl) return "";
 
-    std::string url = MASTODON_INSTANCE + "/api/v1/timelines/tag/activityros";  // Listening for #activityros posts
+    std::string url = MASTODON_INSTANCE + "/api/v1/timelines/tag/activityros3";  // Listening for #activityros posts
     std::string response;
 
     struct curl_slist *headers = NULL;
@@ -83,7 +83,7 @@ std::string parseMastodonResponse(const std::string &response) {
 class TurtleController : public rclcpp::Node {
 public:
     TurtleController() : Node("turtle_controller") {
-        publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/turtle1/cmd_vel", 10);
+        publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
         // Timer to check Mastodon every 5 seconds
         timer_ = this->create_wall_timer(5s, std::bind(&TurtleController::checkMastodon, this));

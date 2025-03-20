@@ -1,16 +1,3 @@
-// Copyright 2016 Open Source Robotics Foundation, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 #include <chrono>
 #include <memory>
 #include <string>
@@ -24,11 +11,9 @@
 
 using namespace std::chrono_literals;
 
-// Mastodon API Credentials (Replace with your actual values)
-const std::string MASTODON_INSTANCE = "https://mastodon.social";  // Change to your instance
-const std::string ACCESS_TOKEN = "API_TOKEN";  // Replace with your API key
+const std::string MASTODON_INSTANCE = "https://mastodon.social";
+const std::string ACCESS_TOKEN = "ACCESS_TOKEN";
 
-// Function to handle HTTP GET request to Mastodon
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *output) {
     size_t total_size = size * nmemb;
     output->append((char*)contents, total_size);
@@ -39,7 +24,7 @@ std::string fetchMastodonPosts() {
     CURL *curl = curl_easy_init();
     if (!curl) return "";
 
-    std::string url = MASTODON_INSTANCE + "/api/v1/timelines/tag/activityros";  // Listening for #activityros posts
+    std::string url = MASTODON_INSTANCE + "/api/v1/timelines/tag/activityros6";
     std::string response;
 
     struct curl_slist *headers = NULL;
@@ -59,7 +44,6 @@ std::string fetchMastodonPosts() {
     return response;
 }
 
-// Function to parse Mastodon response and extract the latest command
 std::string parseMastodonResponse(const std::string &response) {
     Json::Value root;
     Json::CharReaderBuilder reader;
@@ -79,14 +63,11 @@ std::string parseMastodonResponse(const std::string &response) {
     return "";
 }
 
-// TurtleBot Controller Node
-class TurtleController : public rclcpp::Node {
+class PriusController : public rclcpp::Node {
 public:
-    TurtleController() : Node("turtle_controller") {
-        publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/turtle1/cmd_vel", 10);
-
-        // Timer to check Mastodon every 5 seconds
-        timer_ = this->create_wall_timer(5s, std::bind(&TurtleController::checkMastodon, this));
+    PriusController() : Node("prius_controller") {
+        publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+        timer_ = this->create_wall_timer(5s, std::bind(&PriusController::checkMastodon, this));
     }
 
 private:
@@ -106,20 +87,16 @@ private:
         auto msg = geometry_msgs::msg::Twist();
 
         msg.linear.x = 0.0;
-        msg.linear.y = 0.0;
-        msg.linear.z = 0.0;
-        msg.angular.x = 0.0;
-        msg.angular.y = 0.0;
         msg.angular.z = 0.0;
 
         if (command.find("forward") != std::string::npos) {
-            msg.linear.x = 2.0;  // Move forward
+            msg.linear.x = 3.0;
         } else if (command.find("backward") != std::string::npos) {
-            msg.linear.x = -2.0;  // Move backward
+            msg.linear.x = -3.0;
         } else if (command.find("left") != std::string::npos) {
-            msg.angular.z = 2.0;  // Rotate left
+            msg.angular.z = 1.5;
         } else if (command.find("right") != std::string::npos) {
-            msg.angular.z = -2.0; // Rotate right
+            msg.angular.z = -1.5;
         } else {
             RCLCPP_INFO(this->get_logger(), "No valid command found.");
             return;
@@ -132,7 +109,7 @@ private:
 
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<TurtleController>());
+    rclcpp::spin(std::make_shared<PriusController>());
     rclcpp::shutdown();
     return 0;
 }

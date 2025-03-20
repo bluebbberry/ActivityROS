@@ -1,5 +1,9 @@
 # ActivityROS
 
+## Demo
+
+In the following [Demo](https://makertube.net/w/5StbcXbQcytXS1VVknSgMY), you can see the Prius from the Gazebo simulation being controlled via Mastodon.
+
 ## 1. Build and run package
 
 In ros2_ws, run:
